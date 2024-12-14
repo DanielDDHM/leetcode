@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 func isValid(s string) bool {
 	// Create a stack to store opening brackets
 	stack := []rune{}
@@ -29,4 +31,12 @@ func isValid(s string) bool {
 
 	// If the stack is empty, all brackets are balanced
 	return len(stack) == 0
+}
+
+func main() {
+	fmt.Println(isValid("()"))     // true
+	fmt.Println(isValid("()[]{}")) // true
+	fmt.Println(isValid("(]"))     // false
+	fmt.Println(isValid("([)]"))   // false
+	fmt.Println(isValid("{[]}"))   // true
 }

@@ -1,0 +1,77 @@
+name: LeetCode Automation
+
+on:
+  schedule:
+    # Ponto único de configuração dos horários (3x/dia, em UTC).
+    # A plataforma do GitHub Actions não permite variáveis em `cron:`,
+    # por isso para mudar os horários edita diretamente estas três linhas.
+    - cron: "0 9 * * *"   # 09:00 UTC
+    - cron: "0 15 * * *"  # 15:00 UTC
+    - cron: "0 21 * * *"  # 21:00 UTC
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: leetcode-automation
+  cancel-in-progress: false
+
+jobs:
+  solve:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Verificar chave da API Claude
+        run: |
+          if [ -z "${{ secrets.ANTHROPIC_API_KEY }}" ]; then
+            echo "::error::ANTHROPIC_API_KEY não está configurada nos Secrets do repositório. A terminar sem qualquer alteração ao repositório."
+            exit 1
+          fi
+
+      - name: Configurar Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Configurar identidade Git
+        run: |
+          git config user.name "DanielDDHM"
+          git config user.email "daniel.ddhm@gmail.com"
+
+      - name: Resolver próximo exercício e abrir PR
+        uses: anthropics/claude-code-action@v1
+        with:
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          github_token: ${{ secrets.GH_TOKEN }}
+          base_branch: main
+          branch_prefix: "leetcode/"
+          bot_name: "DanielDDHM"
+          bot_id: "88034228"
+          prompt: |
+            Repositório: ${{ github.repository }}
+            Branch base: main
+
+            Lê e segue exatamente o protocolo descrito em
+            .github/leetcode-automation/INSTRUCTIONS.md neste repositório —
+            lê esse ficheiro na íntegra antes de fazeres qualquer outra coisa.
+            Esse ficheiro é a tua única fonte de instruções para esta execução.
+
+            Lembretes absolutos, que já estão detalhados no ficheiro:
+            - Toda a autoria (commits, branch, Pull Request) é exclusivamente
+              de DanielDDHM. Nunca menciones Claude, Anthropic ou IA em nada
+              que fique gravado no repositório ou no GitHub.
+            - Zero comentários no código que escreveres.
+            - Se algo falhar ou ficar incerto em qualquer passo, aborta sem
+              commit, sem push e sem PR, conforme o protocolo de falha do
+              ficheiro de instruções.
+          claude_args: |
+            --allowedTools "Bash,Edit,Write,Read,Glob,Grep,WebFetch,WebSearch"
+            --max-turns 60
+            --model claude-opus-5

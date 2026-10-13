@@ -1,13 +1,6 @@
 name: LeetCode Automation
 
 on:
-  schedule:
-    # Ponto único de configuração dos horários (3x/dia, em UTC).
-    # A plataforma do GitHub Actions não permite variáveis em `cron:`,
-    # por isso para mudar os horários edita diretamente estas três linhas.
-    - cron: "0 9 * * *"   # 09:00 UTC
-    - cron: "0 15 * * *"  # 15:00 UTC
-    - cron: "0 21 * * *"  # 21:00 UTC
   workflow_dispatch: {}
 
 permissions:
